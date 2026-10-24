@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phishguard"
+version = "1.0.0"
+description = "Explainable rule-based expert system that detects scam emails and text messages using forward chaining with certainty factors."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Yasmeen Azmat Ali" }]
+keywords = ["expert-system", "forward-chaining", "phishing", "explainable-ai", "security"]
+dependencies = []
+
+[project.scripts]
+phishguard = "expert_system.cli:main"
+
+[tool.setuptools]
+packages = ["expert_system"]

@@ -1,0 +1,271 @@
+================================================================
+  VERDICT: LIKELY SCAM   (risk 99%)
+  Most likely: Credential phishing (tries to steal your login)
+================================================================
+
+WARNING SIGNS IN THIS EMAIL
+  (context, not a warning by itself: Presents itself as Northwind Bank)
+  1. Pushes you to act immediately or within hours
+     Found: “immediately”, “within 24 hours”
+  2. Threatens suspension, locking, fines or legal action
+     Found: “suspended”, “closed permanently”, “unusual sign-in”
+  3. Asks you to log in, verify an account or share a password or code
+     Found: “verify your account”, “confirm your password”, “login”, “password”
+  4. Generic greeting such as "Dear customer"
+     Found: “dear customer”
+  5. Link or sender uses a lookalike of a real brand's domain
+     Sender domain northwind-bank-alerts.com imitates Northwind Bank
+  6. Sender's address does not belong to the company it names
+     Says it is Northwind Bank but the address is @northwind-bank-alerts.com
+  7. Replies would go to a different domain than the sender
+     Replies go to verify.team@secure-mailbox.xyz, not northwind-bank-alerts.com
+  8. Link uses plain http:// instead of https://
+     northwind-bank-alerts.com uses unencrypted http://
+  9. Names a company but links to a website that is not theirs
+     Names Northwind Bank but links to northwind-bank-alerts.com
+
+WHAT TO DO
+  [DANGER] Don't log in through this message: Do not click the link or enter any password or code. If you already did, change that password now and turn on two-factor authentication.
+  [CAUTION] Verify through an official channel: Contact the company using the app, website or phone number you already know, not the details in this message.
+  [CAUTION] Inspect the link first: Hover over (or long-press) the link to see its real address before doing anything. Type the official address yourself instead.
+  [ADVICE] Report and delete: Report the message as phishing in your email app (or forward scam texts to your carrier's spam number), then delete it.
+  [ADVICE] Take your time: Scammers rely on urgency. A genuine deadline will survive a few minutes of checking.
+
+PHISHGUARD | Reasoning report
+================================================================
+Knowledge base: PhishGuard scam-message rules v1.0  (48 rules, threshold 0.2)
+
+SIGNALS FOUND IN THE MESSAGE
+  • Pushes you to act immediately or within hours  →  detected
+  • Threatens suspension, locking, fines or legal action  →  detected
+  • Asks you to log in, verify an account or share a password or code  →  detected
+  • Generic greeting such as "Dear customer"  →  detected
+  • Claims to be from a known company or bank  →  detected
+  • Link or sender uses a lookalike of a real brand's domain  →  detected
+  • Sender's address does not belong to the company it names  →  detected
+  • Replies would go to a different domain than the sender  →  detected
+  • Contains web links  →  detected
+  • Link uses plain http:// instead of https://  →  detected
+  • Names a company but links to a website that is not theirs  →  detected
+
+WHAT TO DO
+  1. [DANGER] Do not click the link or enter any password or code. If you already did, change that password now and turn on two-factor authentication.
+     certainty ██████████ 0.98 (certain)
+  2. [CAUTION] Contact the company using the app, website or phone number you already know, not the details in this message.
+     certainty █████████░ 0.89 (very likely)
+  3. [CAUTION] Hover over (or long-press) the link to see its real address before doing anything. Type the official address yourself instead.
+     certainty ████████░░ 0.83 (very likely)
+  4. [ADVICE] Report the message as phishing in your email app (or forward scam texts to your carrier's spam number), then delete it.
+     certainty ██████████ 0.98 (certain)
+  5. [ADVICE] Scammers rely on urgency. A genuine deadline will survive a few minutes of checking.
+     certainty ████████░░ 0.77 (likely)
+
+WHAT THE ENGINE CONCLUDED
+  ██████████ 0.99  Pretends to be a trusted organisation  (certain)
+  ██████████ 0.98  Credential phishing (tries to steal your login)  (certain)
+  ██████████ 0.96  Uses pressure to rush you  (certain)
+  █████████░ 0.93  Contains a dangerous link  (very likely)
+  █████████░ 0.88  Sender identity looks forged  (very likely)
+  █████████░ 0.87  High-risk, multi-signal scam  (very likely)
+
+INFERENCE TRACE (forward chaining)
+  Step 1  [S4]  stratum 1  conflict set: S1, S2, S4, S6, S7, L5, L7, T1, T2, T3
+     IF claims_brand (1.00) AND lookalike_domain (1.00)
+     THEN impersonation   CF = 0.85 × 1.00 = 0.85
+     because: Lookalike domains exist to borrow a real brand's trust.
+  Step 2  [S6]  stratum 1  conflict set: S1, S2, S6, S7, L5, L7, T1, T2, T3, C1, A7
+     IF claims_brand (1.00) AND generic_greeting (1.00)
+     THEN impersonation   CF = 0.3 × 1.00 = 0.30  combined with 0.85 → 0.90
+     because: A company that knows you would normally use your name.
+  Step 3  [S7]  stratum 1  conflict set: S1, S2, S7, L5, L7, T1, T2, T3, C1, A7
+     IF claims_brand (1.00) AND brand_link_mismatch (1.00)
+     THEN impersonation   CF = 0.75 × 1.00 = 0.75  combined with 0.90 → 0.97
+     because: The message uses a company's name but sends you to someone else's website.
+  Step 4  [L5]  stratum 1  conflict set: S1, S2, L5, L7, T1, T2, T3, C1, A7
+     IF lookalike_domain (1.00) AND has_links (1.00)
+     THEN risky_link   CF = 0.85 × 1.00 = 0.85
+     because: The link leads to a domain imitating a real brand.
+  Step 5  [L7]  stratum 1  conflict set: S1, S2, L7, T1, T2, T3, C1, C2, A7, A8
+     IF insecure_link (1.00) AND asks_credentials (1.00)
+     THEN risky_link   CF = 0.5 × 1.00 = 0.50  combined with 0.85 → 0.93
+     because: Asking for a login over an unencrypted link is a red flag.
+  Step 6  [T1]  stratum 1  conflict set: S1, S2, T1, T2, T3, C1, C2, A7, A8
+     IF urgent_tone (1.00) AND threat_language (1.00)
+     THEN pressure_tactics   CF = 0.85 × 1.00 = 0.85
+     because: Urgency plus a threat is designed to stop you thinking.
+  Step 7  [S1]  stratum 1  conflict set: S1, S2, T2, T3, C1, C2, C11, A7, A8, A10
+     IF sender_mismatch (1.00)
+     THEN sender_spoofing   CF = 0.7 × 1.00 = 0.70
+     because: The address does not match the organisation it claims to be.
+  Step 8  [S2]  stratum 1  conflict set: S2, S3, T2, T3, C1, C2, C11, A7, A8, A10
+     IF reply_to_mismatch (1.00)
+     THEN sender_spoofing   CF = 0.6 × 1.00 = 0.60  combined with 0.70 → 0.88
+     because: Replies are routed somewhere other than the apparent sender.
+  Step 9  [T2]  stratum 1  conflict set: S3, T2, T3, C1, C2, C11, A7, A8, A10
+     IF urgent_tone (1.00)
+     THEN pressure_tactics   CF = 0.5 × 1.00 = 0.50  combined with 0.85 → 0.93
+     because: Artificial deadlines push people to act before checking.
+  Step 10  [T3]  stratum 1  conflict set: S3, T3, C1, C2, C11, A7, A8, A10
+     IF threat_language (1.00)
+     THEN pressure_tactics   CF = 0.5 × 1.00 = 0.50  combined with 0.93 → 0.96
+     because: Fear of losing access is a common manipulation.
+  Step 11  [S3]  stratum 2  conflict set: S3, C1, C2, C11, A7, A8, A10
+     IF claims_brand (1.00) AND sender_spoofing (0.88)
+     THEN impersonation   CF = 0.85 × 0.88 = 0.75  combined with 0.97 → 0.99
+     because: A brand name combined with a forged-looking sender is classic impersonation.
+  Step 12  [C11]  stratum 2  conflict set: C1, C2, C11, A7, A8, A10
+     IF asks_credentials (1.00) AND pressure_tactics (0.96)
+     THEN credential_phishing   CF = 0.55 × 0.96 = 0.53
+     because: Being rushed into logging in or sharing a code is a phishing pattern.
+  Step 13  [A10]  stratum 2  conflict set: C1, C2, X1, A1, A7, A8, A10, A12
+     IF pressure_tactics (0.96)
+     THEN slow_down   CF = 0.8 × 0.96 = 0.77
+     because: Pausing defeats pressure tactics.
+  Step 14  [C1]  stratum 3  conflict set: C1, C2, X1, A1, A7, A8, A12
+     IF asks_credentials (1.00) AND impersonation (0.99)
+     THEN credential_phishing   CF = 0.85 × 0.99 = 0.84  combined with 0.53 → 0.93
+     because: An impersonator asking you to log in is trying to capture your credentials.
+  Step 15  [C2]  stratum 3  conflict set: C2, X1, A1, A7, A8, A12
+     IF asks_credentials (1.00) AND risky_link (0.93)
+     THEN credential_phishing   CF = 0.8 × 0.93 = 0.74  combined with 0.93 → 0.98
+     because: A login request through a dangerous link points to a fake login page.
+  Step 16  [A7]  stratum 3  conflict set: X1, A1, A7, A8, A12
+     IF impersonation (0.99)
+     THEN verify_independently   CF = 0.9 × 0.99 = 0.89
+     because: Check with the real organisation directly.
+  Step 17  [A8]  stratum 3  conflict set: X1, A1, A8, A12
+     IF risky_link (0.93)
+     THEN check_link_destination   CF = 0.9 × 0.93 = 0.83
+     because: Know where a link goes before clicking.
+  Step 18  [X1]  stratum 4  conflict set: X1, A1, A12
+     IF credential_phishing (0.98) AND pressure_tactics (0.96)
+     THEN targeted_attack   CF = 0.9 × 0.96 = 0.87
+     because: Several independent warning signs together make this very likely a scam.
+  Step 19  [A1]  stratum 4  conflict set: A1, A11, A12
+     IF credential_phishing (0.98)
+     THEN dont_enter_credentials   CF = 1 × 0.98 = 0.98
+     because: Protect your accounts first.
+  Step 20  [A12]  stratum 4  conflict set: A11, A12
+     IF credential_phishing (0.98)
+     THEN report_message   CF = 0.9 × 0.98 = 0.88
+     because: Reporting helps protect other people.
+  Step 21  [A11]  stratum 5  conflict set: A11
+     IF targeted_attack (0.87)
+     THEN report_message   CF = 1 × 0.87 = 0.87  combined with 0.88 → 0.98
+     because: Reporting helps protect other people.
+
+HOW EACH RECOMMENDATION WAS REACHED
+
+  dont_enter_credentials  [CF 0.98]  Do not click the link or enter any password or code. If you already did, change that password now and turn on two-factor authentication.
+  └─ credential_phishing  [CF 0.98]  Credential phishing (tries to steal your login)   → A1
+     ├─ asks_credentials: detected   → C11
+     ├─ pressure_tactics  [CF 0.96]  Uses pressure to rush you   → C11
+     │  ├─ urgent_tone: detected   → T1
+     │  ├─ threat_language: detected   → T1
+     │  ├─ urgent_tone: detected   → T2
+     │  └─ threat_language: detected   → T3
+     ├─ asks_credentials: detected   → C1
+     ├─ impersonation  [CF 0.99]  Pretends to be a trusted organisation   → C1
+     │  ├─ claims_brand: detected   → S4
+     │  ├─ lookalike_domain: detected   → S4
+     │  ├─ claims_brand: detected   → S6
+     │  ├─ generic_greeting: detected   → S6
+     │  ├─ claims_brand: detected   → S7
+     │  ├─ brand_link_mismatch: detected   → S7
+     │  ├─ claims_brand: detected   → S3
+     │  └─ sender_spoofing  [CF 0.88]  Sender identity looks forged   → S3
+     │     ├─ sender_mismatch: detected   → S1
+     │     └─ reply_to_mismatch: detected   → S2
+     ├─ asks_credentials: detected   → C2
+     └─ risky_link  [CF 0.93]  Contains a dangerous link   → C2
+        ├─ lookalike_domain: detected   → L5
+        ├─ has_links: detected   → L5
+        ├─ insecure_link: detected   → L7
+        └─ asks_credentials: detected   → L7
+
+  verify_independently  [CF 0.89]  Contact the company using the app, website or phone number you already know, not the details in this message.
+  └─ impersonation  [CF 0.99]  Pretends to be a trusted organisation   → A7
+     ├─ claims_brand: detected   → S4
+     ├─ lookalike_domain: detected   → S4
+     ├─ claims_brand: detected   → S6
+     ├─ generic_greeting: detected   → S6
+     ├─ claims_brand: detected   → S7
+     ├─ brand_link_mismatch: detected   → S7
+     ├─ claims_brand: detected   → S3
+     └─ sender_spoofing  [CF 0.88]  Sender identity looks forged   → S3
+        ├─ sender_mismatch: detected   → S1
+        └─ reply_to_mismatch: detected   → S2
+
+  check_link_destination  [CF 0.83]  Hover over (or long-press) the link to see its real address before doing anything. Type the official address yourself instead.
+  └─ risky_link  [CF 0.93]  Contains a dangerous link   → A8
+     ├─ lookalike_domain: detected   → L5
+     ├─ has_links: detected   → L5
+     ├─ insecure_link: detected   → L7
+     └─ asks_credentials: detected   → L7
+
+  report_message  [CF 0.98]  Report the message as phishing in your email app (or forward scam texts to your carrier's spam number), then delete it.
+  ├─ credential_phishing  [CF 0.98]  Credential phishing (tries to steal your login)   → A12
+  │  ├─ asks_credentials: detected   → C11
+  │  ├─ pressure_tactics  [CF 0.96]  Uses pressure to rush you   → C11
+  │  │  ├─ urgent_tone: detected   → T1
+  │  │  ├─ threat_language: detected   → T1
+  │  │  ├─ urgent_tone: detected   → T2
+  │  │  └─ threat_language: detected   → T3
+  │  ├─ asks_credentials: detected   → C1
+  │  ├─ impersonation  [CF 0.99]  Pretends to be a trusted organisation   → C1
+  │  │  ├─ claims_brand: detected   → S4
+  │  │  ├─ lookalike_domain: detected   → S4
+  │  │  ├─ claims_brand: detected   → S6
+  │  │  ├─ generic_greeting: detected   → S6
+  │  │  ├─ claims_brand: detected   → S7
+  │  │  ├─ brand_link_mismatch: detected   → S7
+  │  │  ├─ claims_brand: detected   → S3
+  │  │  └─ sender_spoofing  [CF 0.88]  Sender identity looks forged   → S3
+  │  │     ├─ sender_mismatch: detected   → S1
+  │  │     └─ reply_to_mismatch: detected   → S2
+  │  ├─ asks_credentials: detected   → C2
+  │  └─ risky_link  [CF 0.93]  Contains a dangerous link   → C2
+  │     ├─ lookalike_domain: detected   → L5
+  │     ├─ has_links: detected   → L5
+  │     ├─ insecure_link: detected   → L7
+  │     └─ asks_credentials: detected   → L7
+  └─ targeted_attack  [CF 0.87]  High-risk, multi-signal scam   → A11
+     ├─ credential_phishing  [CF 0.98]  Credential phishing (tries to steal your login)   → X1
+     │  ├─ asks_credentials: detected   → C11
+     │  ├─ pressure_tactics  [CF 0.96]  Uses pressure to rush you   → C11
+     │  │  ├─ urgent_tone: detected   → T1
+     │  │  ├─ threat_language: detected   → T1
+     │  │  ├─ urgent_tone: detected   → T2
+     │  │  └─ threat_language: detected   → T3
+     │  ├─ asks_credentials: detected   → C1
+     │  ├─ impersonation  [CF 0.99]  Pretends to be a trusted organisation   → C1
+     │  │  ├─ claims_brand: detected   → S4
+     │  │  ├─ lookalike_domain: detected   → S4
+     │  │  ├─ claims_brand: detected   → S6
+     │  │  ├─ generic_greeting: detected   → S6
+     │  │  ├─ claims_brand: detected   → S7
+     │  │  ├─ brand_link_mismatch: detected   → S7
+     │  │  ├─ claims_brand: detected   → S3
+     │  │  └─ sender_spoofing  [CF 0.88]  Sender identity looks forged   → S3
+     │  │     ├─ sender_mismatch: detected   → S1
+     │  │     └─ reply_to_mismatch: detected   → S2
+     │  ├─ asks_credentials: detected   → C2
+     │  └─ risky_link  [CF 0.93]  Contains a dangerous link   → C2
+     │     ├─ lookalike_domain: detected   → L5
+     │     ├─ has_links: detected   → L5
+     │     ├─ insecure_link: detected   → L7
+     │     └─ asks_credentials: detected   → L7
+     └─ pressure_tactics  [CF 0.96]  Uses pressure to rush you   → X1
+        ├─ urgent_tone: detected   → T1
+        ├─ threat_language: detected   → T1
+        ├─ urgent_tone: detected   → T2
+        └─ threat_language: detected   → T3
+
+  slow_down  [CF 0.77]  Scammers rely on urgency. A genuine deadline will survive a few minutes of checking.
+  └─ pressure_tactics  [CF 0.96]  Uses pressure to rush you   → A10
+     ├─ urgent_tone: detected   → T1
+     ├─ threat_language: detected   → T1
+     ├─ urgent_tone: detected   → T2
+     └─ threat_language: detected   → T3
+
+Educational rule-based analysis: a verdict is an assessment of warning signs, not proof. When in doubt, contact the organisation through a channel you already trust.

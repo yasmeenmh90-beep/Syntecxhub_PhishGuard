@@ -1,0 +1,10 @@
+{
+  "bank_alert": {"file": "bank_alert.eml", "title": "Bank security alert", "kind": "Credential phishing email"},
+  "parcel_fee": {"file": "parcel_fee.txt", "title": "Parcel customs fee", "kind": "Smishing (SMS) payment scam"},
+  "prize": {"file": "prize.txt", "title": "You won an iPhone", "kind": "Advance-fee prize scam"},
+  "invoice_attachment": {"file": "invoice_attachment.eml", "title": "Overdue invoice", "kind": "Malware attachment"},
+  "ceo_giftcards": {"file": "ceo_giftcards.eml", "title": "Boss needs gift cards", "kind": "CEO fraud"},
+  "streaming_html": {"file": "streaming_html.eml", "title": "Membership on hold", "kind": "Hidden link + lookalike"},
+  "otp_whatsapp": {"file": "otp_whatsapp.txt", "title": "Send me the code", "kind": "Account-takeover text"},
+  "genuine_receipt": {"file": "genuine_receipt.eml", "title": "Monthly receipt", "kind": "Genuine message"}
+}

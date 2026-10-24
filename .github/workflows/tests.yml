@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Validate the rule base
+        run: python phishguard.py lint
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -t . -v
+      - name: Inspect every sample
+        run: for s in $(python phishguard.py samples | awk '{print $1}'); do python phishguard.py --sample "$s" --brief > /dev/null; done

@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PhishGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --desk: #eceef2;
+  --paper: #ffffff;
+  --ink: #15171c;
+  --muted: #5d6270;
+  --line: #d9dce3;
+  --soft: #f5f6f8;
+  --blue: #2f5bd3;
+  --danger: #d7263d;
+  --caution: #e08a00;
+  --calm: #1f9d6b;
+  --hl-Sender: #d9ccff;
+  --hl-Links: #b7ecfa;
+  --hl-Language: #fff07a;
+  --hl-Requests: #ffc4d4;
+  --tag-Sender: #6b4ce6;
+  --tag-Links: #0b8db3;
+  --tag-Language: #a07c00;
+  --tag-Requests: #d1416b;
+  --sans: "Instrument Sans", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #111318; --paper: #1a1d24; --ink: #eceef3; --muted: #9aa1b0; --line: #2c313c; --soft: #20242c;
+    --blue: #7d9dff; --hl-Sender: rgba(150,120,255,.38); --hl-Links: rgba(60,200,240,.32);
+    --hl-Language: rgba(255,224,60,.32); --hl-Requests: rgba(255,110,150,.34);
+    --tag-Sender: #b3a1ff; --tag-Links: #5fd3f3; --tag-Language: #f5d34a; --tag-Requests: #ff8fae;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--desk); color: var(--ink); font: 16px/1.5 var(--sans); }
+button, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 0 28px; }
+@media (max-width: 700px) { .wrap { padding: 0 16px; } }
+
+/* header */
+header { padding: 30px 0 18px; display: flex; gap: 18px 30px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo svg { width: 46px; height: 46px; }
+.logo h1 { margin: 0; font: 700 2.3rem/1 var(--sans); letter-spacing: -0.04em; }
+.intro { margin: 8px 0 0; color: var(--muted); max-width: 56ch; }
+.stats { color: var(--muted); font-size: .9rem; }
+
+.btn { border: 1.5px solid var(--ink); background: transparent; border-radius: 10px; padding: 9px 16px; font-weight: 600; cursor: pointer; }
+.btn:hover { background: var(--paper); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.primary:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn.small { padding: 5px 11px; font-size: .86rem; border-radius: 8px; }
+.btn[disabled] { opacity: .5; cursor: progress; }
+
+/* desk layout */
+.desk { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; padding-bottom: 26px; }
+@media (max-width: 980px) { .desk { grid-template-columns: minmax(0, 1fr); } }
+.sheet { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+.evidence { padding: 0; overflow: hidden; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.sheet-head h2, .panel h2 { margin: 0; font: 700 1.15rem/1.2 var(--sans); }
+.sheet-head .meta { color: var(--muted); font-size: .88rem; }
+textarea {
+  display: block; width: 100%; min-height: 360px; border: 0; resize: vertical; padding: 18px; background: var(--paper);
+  font: 14px/1.65 var(--mono); outline: none;
+}
+textarea::placeholder { color: var(--muted); }
+.samples { padding: 14px 18px 18px; border-top: 1px solid var(--line); background: var(--soft); }
+.samples p { margin: 0 0 10px; color: var(--muted); font-size: .9rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: .88rem; }
+.chip:hover { border-color: var(--blue); color: var(--blue); }
+.actions-row { display: flex; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+
+/* annotated message */
+.message { margin: 0; padding: 20px 18px 24px; font: 14px/1.85 var(--mono); white-space: pre-wrap; word-break: break-word; max-height: 640px; overflow: auto; }
+mark { color: inherit; border-radius: 3px; padding: 1px 0; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+mark sup { font: 700 10px var(--sans); vertical-align: super; margin-left: 1px; padding: 0 3px; border-radius: 6px; background: var(--ink); color: var(--paper); }
+mark.flash { outline: 2px solid var(--ink); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 10px 18px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+
+/* verdict */
+.findings { display: flex; flex-direction: column; gap: 18px; }
+.verdict { position: relative; padding: 22px 22px 20px; overflow: hidden; --tone: var(--muted); }
+.verdict.danger { --tone: var(--danger); } .verdict.caution { --tone: var(--caution); } .verdict.calm { --tone: var(--calm); }
+.stamp {
+  display: inline-block; margin: 10px 0 4px 6px; transform: rotate(-6deg); border: 4px solid var(--tone); color: var(--tone); border-radius: 10px;
+  padding: 6px 16px 4px; font: 700 2rem/1.05 var(--sans); letter-spacing: .04em; text-transform: uppercase;
+  mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.82) 61%, #000 75%);
+}
+@media (prefers-reduced-motion: no-preference) { .stamp.drop { animation: stamp .35s cubic-bezier(.2,1.6,.4,1); } }
+@keyframes stamp { from { transform: rotate(-6deg) scale(1.6); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
+.verdict .type { margin: 18px 0 4px; font: 600 1.2rem/1.3 var(--sans); }
+.verdict .why { margin: 0; color: var(--muted); }
+.risk { margin-top: 16px; }
+.risk-bar { height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--calm) 0 40%, var(--caution) 40% 70%, var(--danger) 70% 100%); opacity: .25; position: relative; }
+.risk-wrap { position: relative; }
+.risk-needle { position: absolute; top: -5px; width: 4px; height: 20px; border-radius: 2px; background: var(--tone); transition: left .5s ease; }
+.risk-labels { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted); margin-top: 6px; }
+.verdict.empty .stamp { border-style: dashed; color: var(--muted); border-color: var(--line); }
+
+.panel { padding: 18px 20px; }
+.panel h2 { margin-bottom: 4px; }
+.panel .sub { margin: 0 0 12px; color: var(--muted); font-size: .9rem; }
+.signs { list-style: none; margin: 0; padding: 0; }
+.sign { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 4px 10px; padding: 11px 0; border-top: 1px solid var(--line); align-items: start; }
+.sign .num { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; font: 700 .78rem var(--sans); background: var(--hl); color: var(--ink); }
+.sign .what { font-weight: 600; }
+.sign .reason { grid-column: 2; color: var(--muted); font-size: .88rem; }
+.sign.off { opacity: .45; }
+.ctx { display: inline-block; font-style: normal; font-weight: 500; font-size: .75rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; margin-left: 4px; vertical-align: 1px; }
+.sign.off .what { text-decoration: line-through; }
+.toggle { font-size: .8rem; border: 1px solid var(--line); background: var(--soft); border-radius: 999px; padding: 3px 10px; cursor: pointer; white-space: nowrap; }
+.toggle:hover { border-color: var(--ink); }
+details.missed summary { cursor: pointer; color: var(--blue); font-weight: 600; margin-top: 12px; }
+details.missed ul { list-style: none; padding: 0; margin: 8px 0 0; }
+details.missed li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px dashed var(--line); font-size: .9rem; }
+
+.checks { list-style: none; margin: 0; padding: 0; }
+.checks li { display: grid; grid-template-columns: 14px 1fr; gap: 2px 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+.checks li::before { content: ""; grid-row: span 2; width: 14px; height: 14px; border-radius: 4px; background: var(--c); margin-top: 4px; }
+.checks span { color: var(--muted); font-size: .9rem; }
+.todo { list-style: none; margin: 0; padding: 0; counter-reset: todo; }
+.todo li { padding: 12px 0 12px 16px; border-top: 1px solid var(--line); position: relative; }
+.todo li::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 2px; background: var(--c); }
+.todo li.danger { --c: var(--danger); } .todo li.caution { --c: var(--caution); } .todo li.advice { --c: var(--calm); }
+.todo strong { display: block; }
+.todo span { color: var(--muted); font-size: .9rem; }
+
+/* reasoning */
+.reasoning { padding: 22px 0 40px; }
+.reasoning > h2 { font: 700 1.5rem/1.2 var(--sans); margin: 0 0 4px; letter-spacing: -0.02em; }
+.reasoning > p { margin: 0 0 14px; color: var(--muted); max-width: 70ch; }
+.chain { overflow-x: auto; padding: 8px 0; }
+.chain svg { display: block; }
+.col-label { font: 600 12.5px var(--sans); fill: var(--muted); }
+.edge { fill: none; stroke: var(--blue); opacity: .5; }
+.edge.neg { stroke-dasharray: 5 4; }
+.rule-badge rect { fill: var(--paper); stroke: var(--blue); }
+.rule-badge text { font: 700 10.5px var(--sans); fill: var(--blue); }
+.node rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
+.node.answer rect { stroke: none; }
+.node.action rect { stroke-width: 2.2; }
+.node.action.danger rect { stroke: var(--danger); } .node.action.caution rect { stroke: var(--caution); } .node.action.advice rect { stroke: var(--calm); }
+.node.threat rect { stroke: var(--danger); stroke-dasharray: 4 3; }
+.node text { font: 12.5px var(--sans); fill: var(--ink); }
+.node .sub { font-size: 11px; fill: var(--muted); }
+@media (prefers-reduced-motion: no-preference) {
+  .edge.draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw .7s ease-out forwards; }
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; margin-top: 22px; }
+@media (max-width: 980px) { .split { grid-template-columns: minmax(0, 1fr); } }
+.steps { margin: 0; padding-left: 1.5em; }
+.steps li { padding: 9px 0 9px 4px; border-top: 1px solid var(--line); font-size: .93rem; }
+.steps code { font: 600 .85em var(--mono); background: var(--soft); padding: 1px 5px; border-radius: 4px; }
+.steps .rid { font-weight: 700; color: var(--blue); }
+.steps .math { color: var(--muted); font-size: .86rem; }
+.whatif { list-style: none; margin: 0; padding: 0; }
+.whatif li { padding: 11px 0; border-top: 1px solid var(--line); }
+.whatif .if { font-weight: 600; }
+.whatif .then { color: var(--muted); font-size: .9rem; }
+.export { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+select.btn { appearance: none; padding-right: 30px; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+.hidden { display: none !important; }
+footer { padding: 18px 0 30px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+.error { color: var(--danger); padding: 0 18px 12px; font-weight: 600; }
+
+/* ===================== styling layer ===================== */
+:root { --brand: #3d5afe; --brand-2: #7c4dff; --glow: rgba(61, 90, 254, .14); --dot: rgba(21, 23, 28, .07); --shadow: 0 1px 2px rgba(15,20,40,.06), 0 8px 28px rgba(15,20,40,.07); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand: #7d8fff; --brand-2: #b18cff; --glow: rgba(125, 143, 255, .16); --dot: rgba(255,255,255,.06); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); } }
+body {
+  background-color: var(--desk);
+  background-image: radial-gradient(900px 420px at 12% -6%, var(--glow), transparent 70%),
+                    radial-gradient(700px 380px at 100% 0%, color-mix(in srgb, var(--danger) 9%, transparent), transparent 70%),
+                    radial-gradient(var(--dot) 1.2px, transparent 1.3px);
+  background-size: auto, auto, 22px 22px;
+  background-attachment: fixed;
+}
+.sheet { box-shadow: var(--shadow); }
+.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* header */
+header { padding: 34px 0 24px; }
+.logo svg { width: 54px; height: 54px; filter: drop-shadow(0 6px 14px var(--glow)); }
+.logo h1 { font-size: clamp(2.3rem, 4.5vw, 3.1rem); background: linear-gradient(100deg, var(--ink) 0 55%, var(--brand) 85%, var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat { display: flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; box-shadow: var(--shadow); color: var(--ink); }
+.stat .icon { color: var(--brand); }
+.stat b { font-size: 1.1rem; }
+.stat span { color: var(--muted); font-size: .84rem; }
+
+/* evidence document */
+.evidence { position: relative; overflow: visible; }
+.evidence::after { content: ""; position: absolute; top: -1px; right: -1px; width: 34px; height: 34px; border-bottom-left-radius: 10px;
+  background: linear-gradient(225deg, var(--desk) 50%, var(--soft) 50%); box-shadow: -2px 2px 4px rgba(0,0,0,.08); border-top-right-radius: 14px; }
+.evidence-tab { position: absolute; top: -13px; left: 18px; background: var(--brand); color: #fff; font: 700 .72rem/1 var(--sans); letter-spacing: .08em;
+  padding: 6px 10px; border-radius: 6px; box-shadow: 0 4px 12px var(--glow); }
+.sheet-head { padding-top: 20px; }
+.sheet-head h2 { display: flex; align-items: center; gap: 8px; }
+textarea { background-image: repeating-linear-gradient(transparent 0 22.1px, var(--line) 22.1px 23.1px); background-position: 0 17px; background-attachment: local; line-height: 23.1px; }
+.btn.primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); border-color: transparent; color: #fff; box-shadow: 0 6px 18px var(--glow); display: inline-flex; align-items: center; gap: 8px; }
+.btn.primary:hover { filter: brightness(1.08); background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
+.chip { display: inline-flex; align-items: center; gap: 7px; transition: transform .15s; }
+.chip .icon { width: 15px; height: 15px; color: var(--muted); }
+.chip:hover { transform: translateY(-1px); }
+.chip:hover .icon { color: var(--blue); }
+
+/* laser scan */
+.message { position: relative; }
+.scanbeam { position: absolute; left: 0; right: 0; height: 70px; top: -70px; pointer-events: none;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--brand) 22%, transparent) 70%, var(--brand) 98%, transparent);
+  opacity: 0; }
+.scanning .scanbeam { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .scanning .scanbeam { animation: beam 0.9s cubic-bezier(.5,0,.5,1) forwards; }
+  .reveal mark { animation: mark-in .45s ease both; animation-delay: var(--d, 0ms); }
+}
+@keyframes beam { from { top: -70px; } to { top: 100%; } }
+@keyframes mark-in { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+mark { background-color: transparent; background-repeat: no-repeat; background-size: 100% 100%; }
+
+/* verdict card */
+.verdict { background: linear-gradient(160deg, color-mix(in srgb, var(--tone) 12%, var(--paper)), var(--paper) 60%); border-color: color-mix(in srgb, var(--tone) 40%, var(--line)); }
+.verdict-top { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 8px 16px; align-items: center; }
+.gauge { width: 150px; height: 92px; }
+.gauge .track { fill: none; stroke: var(--line); stroke-width: 12; stroke-linecap: round; }
+.gauge .zone { fill: none; stroke-width: 12; opacity: .28; }
+.gauge .val { fill: none; stroke: var(--tone); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1); }
+.gauge text { font: 700 24px var(--sans); fill: var(--ink); }
+.gauge .cap { font: 500 10.5px var(--sans); fill: var(--muted); }
+.awaiting { display: flex; align-items: center; gap: 18px; }
+.awaiting svg { width: 120px; height: 90px; flex: none; }
+.awaiting .env { fill: var(--soft); stroke: var(--muted); stroke-width: 2; }
+.awaiting .lens { fill: color-mix(in srgb, var(--brand) 12%, transparent); stroke: var(--brand); stroke-width: 4; }
+@media (prefers-reduced-motion: no-preference) { .awaiting .glass { animation: hover-lens 3.2s ease-in-out infinite; transform-origin: 70px 50px; } }
+@keyframes hover-lens { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-22px, -6px); } }
+@media (max-width: 520px) { .verdict-top { grid-template-columns: minmax(0, 1fr); } .awaiting svg { width: 90px; } }
+
+/* checks + signs */
+.checks li { grid-template-columns: 38px 1fr; }
+.checks li::before { display: none; }
+.checks .ci { grid-row: span 2; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--c); color: var(--ink); }
+.checks .ci .icon { width: 20px; height: 20px; }
+.panel h2 { display: flex; align-items: center; gap: 8px; }
+.panel h2 .icon { color: var(--brand); width: 20px; height: 20px; }
+.count-badge { margin-left: auto; font: 700 .78rem var(--sans); padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--danger) 14%, var(--paper)); color: var(--danger); }
+.count-badge.ok { background: color-mix(in srgb, var(--calm) 16%, var(--paper)); color: var(--calm); }
+.todo li { border-radius: 10px; }
+.todo li.danger strong { color: var(--danger); }
+.reasoning > h2 { display: flex; align-items: center; gap: 10px; }
+.reasoning > h2 .icon { width: 26px; height: 26px; color: var(--brand); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="logo">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M24 3 6 10v13c0 11 7.6 19.4 18 22 10.4-2.6 18-11 18-22V10z" fill="var(--ink)"/>
+          <path d="M29 14v12a6 6 0 0 1-12 0v-2" fill="none" stroke="var(--paper)" stroke-width="3" stroke-linecap="round"/>
+          <path d="m14 27 3-4 3 4" fill="none" stroke="var(--paper)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="29" cy="12" r="2.6" fill="var(--danger)"/>
+        </svg>
+        <h1>PhishGuard</h1>
+      </div>
+      <p class="intro">Paste a suspicious email or text. PhishGuard marks every warning sign, reasons through its rules, and tells you what to do.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main class="desk">
+    <section class="sheet evidence" aria-label="Message">
+      <div class="evidence-tab">EVIDENCE</div>
+      <div class="sheet-head">
+        <h2 id="evidenceTitle">The message</h2>
+        <span class="meta" id="evidenceMeta">Paste it exactly as you received it, headers included if you have them.</span>
+      </div>
+      <div id="editor">
+        <textarea id="input" spellcheck="false" placeholder="From: &quot;Your Bank&quot; &lt;alerts@example.com&gt;&#10;Subject: Action required&#10;&#10;Paste the full message here…"></textarea>
+        <div class="error hidden" id="error"></div>
+        <div class="actions-row">
+          <button class="btn primary" id="inspectBtn" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>Inspect message</button>
+          <button class="btn" id="clearBtn" type="button">Clear</button>
+        </div>
+        <div class="samples">
+          <p>No message to hand? Try one of these. All brands in the samples are fictional.</p>
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+      <div id="annotated" class="hidden">
+        <div class="message-wrap" style="position:relative"><pre class="message" id="message"></pre></div>
+        <div class="legend">
+          <span style="--c:var(--hl-Sender)">Sender</span><span style="--c:var(--hl-Links)">Links</span>
+          <span style="--c:var(--hl-Language)">Pressure</span><span style="--c:var(--hl-Requests)">Requests</span>
+        </div>
+        <div class="actions-row"><button class="btn" id="editBtn" type="button">Edit or paste another message</button></div>
+      </div>
+    </section>
+
+    <section class="findings" aria-label="Findings">
+      <div class="sheet verdict empty" id="verdict">
+        <div class="awaiting">
+          <svg viewBox="0 0 120 90" aria-hidden="true">
+            <rect class="env" x="8" y="18" width="78" height="54" rx="6"/><path class="env" d="m8 24 39 26 39-26" fill="none"/>
+            <g class="glass"><circle class="lens" cx="80" cy="46" r="17"/><path d="m92 58 14 14" stroke="var(--brand)" stroke-width="7" stroke-linecap="round"/></g>
+          </svg>
+          <div>
+            <div class="stamp" style="font-size:1.35rem">Awaiting evidence</div>
+            <p class="why" style="margin-top:10px">Paste a message or pick a sample. The verdict, the warning signs and what to do will appear here.</p>
+          </div>
+        </div>
+      </div>
+      <div class="sheet panel" id="checksPanel">
+        <h2><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>What PhishGuard checks</h2>
+        <p class="sub">Every message is read for four kinds of warning sign. Each one found becomes a fact for the rule engine.</p>
+        <ul class="checks">
+          <li style="--c:var(--hl-Sender)"><span class="ci" data-ic="user"></span><strong>Who sent it</strong><span>Forged or lookalike sender addresses, free webmail posing as a company, replies redirected elsewhere.</span></li>
+          <li style="--c:var(--hl-Links)"><span class="ci" data-ic="link"></span><strong>Where links really go</strong><span>Lookalike domains, link shorteners, raw IP addresses, links whose text and target differ.</span></li>
+          <li style="--c:var(--hl-Language)"><span class="ci" data-ic="clock"></span><strong>How it pressures you</strong><span>Deadlines, threats of suspension, prizes, requests for secrecy.</span></li>
+          <li style="--c:var(--hl-Requests)"><span class="ci" data-ic="key"></span><strong>What it asks for</strong><span>Passwords and codes, payments and gift cards, card or ID details, risky attachments.</span></li>
+        </ul>
+      </div>
+      <div class="sheet panel hidden" id="signsPanel">
+        <h2><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>Warning signs<span class="count-badge" id="signCount"></span></h2>
+        <p class="sub">Numbers match the marks in the message. Spot a mistake? Switch a sign off and the verdict is re-reasoned.</p>
+        <ul class="signs" id="signs"></ul>
+        <details class="missed"><summary>Add a warning sign the scanner missed</summary><ul id="missed"></ul></details>
+      </div>
+      <div class="sheet panel hidden" id="todoPanel">
+        <h2><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>What to do</h2>
+        <ul class="todo" id="todo"></ul>
+      </div>
+    </section>
+  </main>
+
+  <section class="reasoning hidden" id="reasoning">
+    <h2><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6.5 17 11.5M7 17.5l10-5"/></svg>How PhishGuard reached this verdict</h2>
+    <p>Each warning sign on the left feeds if-then rules; conclusions feed further rules until nothing new can be inferred. Thicker links carried more certainty.</p>
+    <div class="sheet chain" id="chain"></div>
+    <div class="split">
+      <div class="sheet panel">
+        <h2>Reasoning log</h2>
+        <p class="sub" id="logSub"></p>
+        <ol class="steps" id="steps"></ol>
+        <div class="export">
+          <select class="btn small" id="fmt" aria-label="Report format"><option value="md">Markdown</option><option value="json">JSON</option><option value="txt">Plain text</option></select>
+          <button class="btn small" id="downloadBtn" type="button">Download report</button>
+        </div>
+      </div>
+      <div class="sheet panel">
+        <h2>What would change the verdict</h2>
+        <p class="sub">The warning signs the verdict depends on most.</p>
+        <ul class="whatif" id="whatif"></ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>Runs entirely on this computer: messages are never uploaded and links are never opened. A verdict is an assessment of warning signs, not proof; when in doubt, contact the organisation through a channel you already trust.</footer>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const state = { kb: null, text: "", overrides: {}, data: null };
+const IC = {
+  shield: '<path d="M12 3 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/>',
+  rules: '<path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="15" cy="18" r="2"/>',
+  chain: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/>',
+  todo: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/>',
+  graph: '<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6.5 17 11.5M7 17.5l10-5"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+};
+const icon = (n) => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+const CAT_ICON = { Sender: "user", Links: "link", Language: "clock", Requests: "key" };
+
+const CAT_OF = {};
+const TONE_WORD = { danger: "Danger", caution: "Caution", advice: "Good practice" };
+
+async function api(path, body) {
+  const res = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+/* ---------- inspect ---------- */
+async function run(text, keepOverrides) {
+  state.text = text;
+  if (!keepOverrides) state.overrides = {};
+  state.fresh = !keepOverrides;
+  try {
+    state.data = await api("/api/inspect", { text, overrides: state.overrides });
+  } catch (err) { $("error").textContent = err.message; $("error").classList.remove("hidden"); return; }
+  $("error").classList.add("hidden");
+  $("editor").classList.add("hidden"); $("annotated").classList.remove("hidden");
+  if (!keepOverrides) await scanEffect();
+  ["signsPanel", "todoPanel", "reasoning"].forEach((id) => $(id).classList.remove("hidden"));
+  $("checksPanel").classList.add("hidden");
+  renderAll(!keepOverrides);
+}
+async function scanEffect() {
+  // Show the plain message, sweep a scan beam over it, then reveal the highlights one by one.
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  $("message").textContent = state.data.extraction.text;
+  if (reduce) return;
+  const wrapEl = $("message").parentElement;
+  let beam = wrapEl.querySelector(".scanbeam");
+  if (!beam) { beam = document.createElement("div"); beam.className = "scanbeam"; wrapEl.append(beam); }
+  wrapEl.classList.remove("scanning"); void wrapEl.offsetWidth; wrapEl.classList.add("scanning");
+  await new Promise((r) => setTimeout(r, 900));
+  wrapEl.classList.remove("scanning");
+}
+function renderAll(fresh) {
+  const d = state.data;
+  $("evidenceTitle").textContent = d.extraction.kind === "email" ? "The email" : "The text message";
+  $("evidenceMeta").textContent = d.extraction.sender ? `From ${d.extraction.sender}` : `${d.extraction.links.length} link${d.extraction.links.length === 1 ? "" : "s"} found`;
+  renderMessage(); renderVerdict(fresh); renderSigns(); renderTodo(); renderChain(); renderLog(); renderWhatIf();
+}
+
+/* numbered signals present in the message */
+function activeSignals() {
+  const sig = state.data.extraction.signals;
+  return Object.values(sig).filter((s) => s.cf > 0 && s.fact !== "has_links").sort((a, b) => (a.spans[0]?.[0] ?? 1e9) - (b.spans[0]?.[0] ?? 1e9));
+}
+function renderMessage() {
+  const text = state.data.extraction.text, list = activeSignals();
+  const num = {}; list.forEach((s, i) => (num[s.fact] = i + 1));
+  const marks = [];
+  for (const s of list) {
+    if (state.overrides[s.fact] === null) continue;
+    for (const [a, b] of s.spans) marks.push({ a, b, fact: s.fact });
+  }
+  const cuts = new Set([0, text.length]);
+  marks.forEach((m) => { cuts.add(m.a); cuts.add(m.b); });
+  const pts = [...cuts].sort((x, y) => x - y);
+  let html = "";
+  const firstSeen = new Set();
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1], seg = text.slice(a, b);
+    const cover = marks.filter((m) => m.a <= a && m.b >= b);
+    if (!cover.length) { html += esc(seg); continue; }
+    const f = cover[0].fact, cat = CAT_OF[f] || "Language";
+    const startsHere = cover.filter((m) => m.a === a && !firstSeen.has(m.fact));
+    startsHere.forEach((m) => firstSeen.add(m.fact));
+    const sup = startsHere.map((m) => `<sup>${num[m.fact]}</sup>`).join("");
+    html += `<mark data-fact="${f}" style="background-image:linear-gradient(var(--hl-${cat}),var(--hl-${cat}))" title="${esc(cover.map((m) => kbText(m.fact)).join(" • "))}">${esc(seg)}${sup}</mark>`;
+  }
+  $("message").innerHTML = html;
+  $("message").querySelectorAll("mark").forEach((m, i) => m.style.setProperty("--d", `${Math.min(i * 70, 1400)}ms`));
+  $("message").classList.toggle("reveal", !!state.fresh);
+  $("message").querySelectorAll("mark").forEach((m) => m.addEventListener("click", () => {
+    const row = document.querySelector(`.sign[data-fact="${m.dataset.fact}"]`);
+    if (row) { row.scrollIntoView({ block: "nearest", behavior: "smooth" }); row.animate([{ background: "var(--soft)" }, { background: "transparent" }], 900); }
+  }));
+}
+function kbText(fact) { const s = state.kb.signals.find((x) => x.id === fact); return s ? s.text : fact; }
+
+function renderVerdict(fresh) {
+  const v = state.data.verdict;
+  const ctx = new Set(state.kb.context);
+  const warnings = Object.entries(state.data.facts).filter(([f, x]) => x > 0 && !ctx.has(f)).length;
+  const why = v.top ? `${v.threats.length} threat${v.threats.length === 1 ? "" : "s"} concluded from ${warnings} warning sign${warnings === 1 ? "" : "s"}.`
+                    : "No rule concluded a scam from the signs found. Stay alert: rules cannot catch every scam.";
+  $("verdict").className = `sheet verdict ${v.tone}`;
+  const L = Math.PI * 58, pct = Math.round(v.risk * 100);
+  const arc = (a, b) => { const p = (t) => [75 + 58 * Math.cos(Math.PI * (1 - t)), 80 - 58 * Math.sin(Math.PI * (1 - t))];
+    const [x1, y1] = p(a), [x2, y2] = p(b); return `M${x1.toFixed(1)},${y1.toFixed(1)} A58,58 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}`; };
+  $("verdict").innerHTML = `
+    <div class="verdict-top">
+      <div>
+        <div class="stamp${fresh ? " drop" : ""}">${esc(v.label)}</div>
+        <p class="type">${v.top ? esc(v.top.label) : "Nothing alarming detected"}</p>
+        <p class="why">${why}</p>
+      </div>
+      <svg class="gauge" viewBox="0 0 150 92" role="img" aria-label="Risk ${pct} percent">
+        <path class="zone" d="${arc(0, 0.4)}" stroke="var(--calm)"/><path class="zone" d="${arc(0.4, 0.7)}" stroke="var(--caution)"/><path class="zone" d="${arc(0.7, 1)}" stroke="var(--danger)"/>
+        <path class="val" d="${arc(0, 1)}" stroke-dasharray="${L.toFixed(1)}" stroke-dashoffset="${(L * (1 - Math.max(v.risk, 0.01))).toFixed(1)}"/>
+        <text x="75" y="76" text-anchor="middle">${pct}%</text><text class="cap" x="75" y="90" text-anchor="middle">risk</text>
+      </svg>
+    </div>`;
+}
+
+function renderSigns() {
+  const list = activeSignals();
+  const realCount = list.filter((x) => !state.kb.context.includes(x.fact) && state.overrides[x.fact] !== null).length;
+  $("signCount").textContent = realCount ? `${realCount} found` : "none";
+  $("signCount").classList.toggle("ok", !realCount);
+  $("signs").innerHTML = list.length ? list.map((s, i) => {
+    const off = state.overrides[s.fact] === null, cat = CAT_OF[s.fact] || "Language";
+    const context = state.kb.context.includes(s.fact);
+    return `<li class="sign${off ? " off" : ""}" data-fact="${s.fact}" style="--hl:var(--hl-${cat})">
+      <span class="num">${i + 1}</span><span class="what">${esc(kbText(s.fact))}${context ? ` <em class="ctx">context, not a warning by itself</em>` : ""}</span>
+      <button class="toggle" type="button" data-fact="${s.fact}">${off ? "Turn back on" : "Not a real issue"}</button>
+      <span class="reason">${esc(s.reason)}</span></li>`;
+  }).join("") : `<li class="sign"><span></span><span class="reason">No warning signs found in this message.</span></li>`;
+  $("signs").querySelectorAll(".toggle").forEach((b) => b.addEventListener("click", () => {
+    const f = b.dataset.fact;
+    if (state.overrides[f] === null) delete state.overrides[f]; else state.overrides[f] = null;
+    run(state.text, true);
+  }));
+  const present = new Set(list.map((s) => s.fact));
+  const missing = state.kb.signals.filter((s) => !present.has(s.id) && s.id !== "has_links");
+  $("missed").innerHTML = missing.map((s) => {
+    const on = state.overrides[s.id] === 1;
+    return `<li><span>${esc(s.text)}</span><button class="toggle" type="button" data-add="${s.id}">${on ? "Remove" : "Add"}</button></li>`;
+  }).join("");
+  $("missed").querySelectorAll("[data-add]").forEach((b) => b.addEventListener("click", () => {
+    const f = b.dataset.add;
+    if (state.overrides[f] === 1) delete state.overrides[f]; else state.overrides[f] = 1;
+    run(state.text, true);
+  }));
+}
+
+function renderTodo() {
+  const recs = state.data.recommendations;
+  $("todo").innerHTML = recs.length ? recs.map((r) => `<li class="${r.severity}"><strong>${esc(r.title)}</strong><span>${esc(r.advice)}</span></li>`).join("")
+    : `<li class="advice"><strong>No action needed from the rules</strong><span>If anything about the message still feels off, check with the sender through a channel you already trust.</span></li>`;
+}
+
+/* ---------- reasoning chain ---------- */
+function wrap(text, max) {
+  const out = []; let line = "";
+  for (const w of text.split(" ")) { if ((line + " " + w).trim().length > max && line) { out.push(line); line = w; } else line = (line + " " + w).trim(); }
+  if (line) out.push(line);
+  return out.length > 3 ? [...out.slice(0, 2), out[2] + "…"] : out;
+}
+function renderChain() {
+  const g = state.data.graph, box = $("chain");
+  if (!g.nodes.length) { box.innerHTML = `<p class="sub" style="padding:18px">No rule fired, so there is no reasoning chain to show.</p>`; return; }
+  const threats = new Set(state.kb.threats);
+  const avail = Math.max(box.clientWidth - 8, 320), LEFT = 16, TOP = 34, GAPY = 14;
+  const GAPX = g.columns > 4 ? 36 : 56;
+  const W = Math.min(240, Math.max(140, Math.floor((avail - LEFT * 2 - (g.columns - 1) * GAPX) / g.columns))), H = 66;
+  const chars = Math.floor((W - 20) / 6.6);
+  const cols = {}; g.nodes.forEach((n) => (cols[n.column] ||= []).push(n));
+  const tallest = Math.max(...Object.values(cols).map((c) => c.length));
+  const height = TOP + tallest * (H + GAPY) + 8, pos = {};
+  // Place columns right to left; order each column by where its links lead (barycentre) to reduce crossings.
+  const targets = {}; g.edges.forEach((e) => (targets[e.source] ||= []).push(e.target));
+  const order = Object.keys(cols).map(Number).sort((x, y) => y - x);
+  for (const c of order) {
+    const nodes = cols[c];
+    nodes.forEach((n, i) => {
+      const ys = (targets[n.id] || []).filter((t) => pos[t]).map((t) => pos[t].y);
+      n._key = ys.length ? ys.reduce((s, y) => s + y, 0) / ys.length : i * 1e-3 + 1e6;
+    });
+    nodes.sort((p, q) => p._key - q._key);
+    const colH = nodes.length * (H + GAPY) - GAPY, y0 = TOP + (height - TOP - 8 - colH) / 2;
+    nodes.forEach((n, i) => (pos[n.id] = { x: LEFT + c * (W + GAPX), y: y0 + i * (H + GAPY) }));
+  }
+  const width = LEFT * 2 + g.columns * W + (g.columns - 1) * GAPX;
+  const labels = Array.from({ length: g.columns }, (_, c) => `<text class="col-label" x="${LEFT + c * (W + GAPX)}" y="18">${c === 0 ? "Warning signs" : "Inference " + c}</text>`).join("");
+  const edges = g.edges.map((e, i) => {
+    const a = pos[e.source], b = pos[e.target], x1 = a.x + W, y1 = a.y + H / 2, x2 = b.x, y2 = b.y + H / 2, mx = (x1 + x2) / 2;
+    return `<path class="edge draw${e.negated ? " neg" : ""}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" stroke-width="${(1.3 + 3 * Math.abs(e.cf)).toFixed(1)}" style="animation-delay:${i * 30}ms"/>`;
+  }).join("");
+  const per = {}; g.edges.forEach((e) => { const l = (per[e.target] ||= []); if (!l.includes(e.rule)) l.push(e.rule); });
+  const badges = Object.entries(per).flatMap(([t, rules]) => rules.map((r, i) => {
+    const b = pos[t], y = b.y + H / 2 + (i - (rules.length - 1) / 2) * 21;
+    return `<g class="rule-badge"><rect x="${b.x - 34}" y="${y - 9}" width="30" height="18" rx="9"/><text x="${b.x - 19}" y="${y + 4}" text-anchor="middle">${esc(r)}</text></g>`;
+  })).join("");
+  const nodes = g.nodes.map((n) => {
+    const p = pos[n.id], cat = CAT_OF[n.id];
+    const title = n.kind === "answer" ? kbText(n.id) : n.kind === "action" ? n.title : n.label;
+    const lines = wrap(title, chars), top = p.y + (H - (lines.length * 14 + 14)) / 2 + 11;
+    const cls = n.kind === "action" ? `action ${n.severity}` : n.kind === "answer" ? "answer" : threats.has(n.id) ? "threat" : "finding";
+    const fill = n.kind === "answer" ? ` style="fill:var(--hl-${cat || "Language"})"` : "";
+    const sub = n.kind === "answer" ? "Found in the message" : `Certainty ${n.cf.toFixed(2)}`;
+    return `<g class="node ${cls}"><title>${esc(n.label)}</title><rect x="${p.x}" y="${p.y}" width="${W}" height="${H}" rx="${n.kind === "action" ? 4 : 10}"${fill}/>
+      <text y="${top}">${lines.map((l, i) => `<tspan x="${p.x + 10}" dy="${i ? 14 : 0}" font-weight="600">${esc(l)}</tspan>`).join("")}</text>
+      <text class="sub" x="${p.x + 10}" y="${top + lines.length * 14 + 2}">${sub}</text></g>`;
+  }).join("");
+  box.innerHTML = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Reasoning chain from warning signs to verdict">${labels}${edges}${badges}${nodes}</svg>`;
+  box.querySelectorAll(".edge").forEach((p) => p.style.setProperty("--len", Math.ceil(p.getTotalLength())));
+}
+
+function renderLog() {
+  const t = state.data.trace;
+  $("logSub").textContent = `${t.length} rule${t.length === 1 ? "" : "s"} fired, in this order.`;
+  $("steps").innerHTML = t.map((s) => `<li><span class="rid">${esc(s.rule)}</span> if ${s.matched.map((m) => `<code>${esc(m.literal)}</code>`).join(" and ")} then <code>${esc(s.conclusion)}</code>
+    <div class="math">Certainty ${s.rule_cf} × ${s.premise_cf.toFixed(2)} = ${Math.abs(s.contribution).toFixed(2)}${s.cf_before ? `, combined with earlier evidence to ${s.cf_after.toFixed(2)}` : ""}. ${esc(s.explanation)}</div></li>`).join("");
+}
+function renderWhatIf() {
+  const items = state.data.whatif;
+  $("whatif").innerHTML = items.length ? items.map((c) => {
+    const lead = c.alternative < 0 ? `Without “${esc(c.text.toLowerCase())}”` : `If it also: ${esc(c.text.toLowerCase())}`;
+    const parts = [...c.adds.map((r) => `adds “${esc(r.title)}”`), ...c.removes.map((r) => `drops “${esc(r.title)}”`)];
+    return `<li><div class="if">${lead}</div><div class="then">The advice ${parts.join(" and ")}.</div></li>`;
+  }).join("") : `<li><div class="then">No single warning sign changes the advice.</div></li>`;
+}
+
+async function download() {
+  try {
+    const r = await api("/api/report", { text: state.text, overrides: state.overrides, format: $("fmt").value });
+    const url = URL.createObjectURL(new Blob([r.content], { type: "text/plain" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: r.filename });
+    document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  } catch (err) { alert(err.message); }
+}
+
+async function init() {
+  state.kb = await api("/api/kb");
+  state.kb.signals.forEach((s) => (CAT_OF[s.id] = s.category));
+  $("stats").innerHTML = [["rules", state.kb.stats.rules, "if-then rules"], ["flag", state.kb.stats.signals, "warning signs"], ["chain", state.kb.stats.depth, "step chains"]]
+    .map(([ic, n, t]) => `<div class="stat">${icon(ic)}<b>${n}</b><span>${t}</span></div>`).join("");
+  $("chips").innerHTML = Object.entries(state.kb.samples).map(([id, s]) => {
+    const isMail = /^\s*(from|subject):/im.test(s.text.slice(0, 200));
+    return `<button class="chip" type="button" data-sample="${id}" title="${esc(s.kind)}">${icon(isMail ? "mail" : "phone")}${esc(s.title)}</button>`;
+  }).join("");
+  $("chips").querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => { $("input").value = state.kb.samples[c.dataset.sample].text; run($("input").value); }));
+  document.querySelectorAll(".ci[data-ic]").forEach((el) => (el.innerHTML = icon(el.dataset.ic)));
+  $("inspectBtn").addEventListener("click", () => run($("input").value));
+  $("input").addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run($("input").value); });
+  $("clearBtn").addEventListener("click", () => { $("input").value = ""; $("input").focus(); });
+  $("editBtn").addEventListener("click", () => { $("annotated").classList.add("hidden"); $("editor").classList.remove("hidden"); $("input").focus(); });
+  $("downloadBtn").addEventListener("click", download);
+  window.addEventListener("resize", () => { clearTimeout(state.rz); state.rz = setTimeout(() => state.data && renderChain(), 150); });
+}
+init().catch((err) => { document.body.insertAdjacentHTML("afterbegin", `<p class="error" style="padding:16px">Could not reach the PhishGuard server: ${esc(err.message)}. Start it with python3 phishguard_web.py</p>`); });
+</script>
+</body>
+</html>
